@@ -43,42 +43,84 @@ func (d *MysqlDriver) fieldsConcat(fields map[string]interface{}) (string, strin
 func (d *MysqlDriver) conditionConcat(info []*ConditionInfo) (string, []interface{}) {
 	conditions := strings.Builder{}
 	var values []interface{}
+	// 操作符和占位符
+	option := ""
+	placeholder := "?"
+	// 遍历所有条件
 	for index, condition := range info {
 		if len(condition.FieldValue) == 0 {
 			continue
 		}
-		if index != 1 {
+		if index != 0 {
 			if condition.Or {
-				conditions.WriteString(" AND ")
-			} else {
 				conditions.WriteString(" OR ")
+			} else {
+				conditions.WriteString(" AND ")
 			}
 		}
 		switch condition.Option {
 		case ConditionOptionLike:
-			conditions.WriteString(condition.FieldName + " LIKE ?")
-			values = append(values, condition.FieldValue[0])
+			option = "LIKE"
 		case ConditionOptionNLike:
-
+			option = "NOT LIKE"
+		case ConditionOptionEq:
+			option = "="
+		case ConditionOptionNeq:
+			option = "!="
+		case ConditionOptionGt:
+			option = ">"
+		case ConditionOptionGte:
+			option = ">="
+		case ConditionOptionLt:
+			option = "<"
+		case ConditionOptionLte:
+			option = "<="
+		case ConditionOptionIn, ConditionOptionNIn:
+			option = "IN"
+			if condition.Option == ConditionOptionNIn {
+				option = "NOT " + option
+			}
+			pl := make([]string, 0, len(condition.FieldValue))
+			for range condition.FieldValue {
+				pl = append(pl, "?")
+			}
+			placeholder = fmt.Sprintf("(%s)", strings.Join(pl, ","))
+		case ConditionOptionBetween, ConditionOptionNBetween:
+			// between条件需要有两个
+			if len(condition.FieldValue) != 2 {
+				continue
+			}
+			option = "BETWEEN"
+			if condition.Option == ConditionOptionNIn {
+				option = "NOT " + option
+			}
+			placeholder = "? AND ?"
 		}
+		conditions.WriteString(fmt.Sprintf("%s %s %s", condition.FieldName, option, placeholder))
+		values = append(values, condition.FieldValue...)
 	}
-	return conditions.String()
+	return conditions.String(), values
 }
 
-func (d *MysqlDriver) Create(table string, fields map[string]interface{}) (affected int64, err error) {
-	field, placeholder, value := d.fieldsConcat(fields)
-	rowSql := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", table, field, placeholder)
-	log.Printf("sql is %s", rowSql)
-	res, err := d.db.Exec(rowSql, value...)
+func (d *MysqlDriver) rowsProcess(result sql.Result, err error) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return res.RowsAffected()
+	return result.RowsAffected()
+}
+
+func (d *MysqlDriver) Create(table string, fields map[string]interface{}) (affected int64, err error) {
+	field, placeholder, values := d.fieldsConcat(fields)
+	rowSql := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", table, field, placeholder)
+	log.Printf("sql is %s", rowSql)
+	return d.rowsProcess(d.db.Exec(rowSql, values...))
 }
 
 func (d *MysqlDriver) Delete(table string, conditions []*ConditionInfo) (affected int64, err error) {
-	//TODO implement me
-	panic("implement me")
+	condition, values := d.conditionConcat(conditions)
+	rowSql := fmt.Sprintf("DELETE FROM %s WHERE %s", table, condition)
+	log.Printf("sql is %s", rowSql)
+	return d.rowsProcess(d.db.Exec(rowSql, values...))
 }
 
 func (d *MysqlDriver) Update(table string, fields map[string]interface{}, conditions []*ConditionInfo) (affected int64, err error) {

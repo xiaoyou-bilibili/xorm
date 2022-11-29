@@ -16,12 +16,15 @@ func TestAddStr(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	row, err := db.Create("people", map[string]interface{}{
-		"id":   5,
-		"name": "小游",
-		"age":  10,
-	})
-	fmt.Println(row, err)
+	//row, err := db.Create("people", map[string]interface{}{
+	//	"id":   5,
+	//	"name": "小游",
+	//	"age":  10,
+	//})
+	//fmt.Println(row, err)
+	fmt.Println(db.Delete("people", []*ConditionInfo{
+		{Option: ConditionOptionNIn, FieldName: "name", FieldValue: []interface{}{1, 2}},
+	}))
 	//// See "Important settings" section.
 	//
 	//rows, err := db.Query("select * from people;")
