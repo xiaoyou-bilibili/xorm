@@ -72,7 +72,7 @@ func ConvertRows2Struct(rows *sql.Rows, data interface{}) error {
 		}
 	}
 	// 把新的切片映射到旧切片上去
-	reflect.ValueOf(data).Elem().Set(newSlice)
+	va.Elem().Set(newSlice)
 
 	return nil
 }

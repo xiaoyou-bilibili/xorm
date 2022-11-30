@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/xiaoyou-bilibili/xorm/utils"
 	"log"
 	"strings"
 	"time"
@@ -28,7 +29,7 @@ type MysqlDriver struct {
 	db *sql.DB
 }
 
-func (d *MysqlDriver) fieldsConcat(fields map[string]interface{}) (string, string, []interface{}) {
+func (d *MysqlDriver) insertFieldsConcat(fields map[string]interface{}) (string, string, []interface{}) {
 	field := make([]string, 0, len(fields))
 	value := make([]interface{}, 0, len(fields))
 	placeholder := make([]string, 0, len(field))
@@ -38,6 +39,16 @@ func (d *MysqlDriver) fieldsConcat(fields map[string]interface{}) (string, strin
 		placeholder = append(placeholder, "?")
 	}
 	return strings.Join(field, ","), strings.Join(placeholder, ","), value
+}
+
+func (d *MysqlDriver) updateFieldConcat(fields map[string]interface{}) (string, []interface{}) {
+	field := make([]string, 0, len(fields))
+	value := make([]interface{}, 0, len(fields))
+	for k, v := range fields {
+		field = append(field, fmt.Sprintf("`%s`=?", k))
+		value = append(value, v)
+	}
+	return strings.Join(field, ","), value
 }
 
 func (d *MysqlDriver) conditionConcat(info []*ConditionInfo) (string, []interface{}) {
@@ -96,10 +107,22 @@ func (d *MysqlDriver) conditionConcat(info []*ConditionInfo) (string, []interfac
 			}
 			placeholder = "? AND ?"
 		}
-		conditions.WriteString(fmt.Sprintf("%s %s %s", condition.FieldName, option, placeholder))
+		conditions.WriteString(fmt.Sprintf("`%s` %s %s", condition.FieldName, option, placeholder))
 		values = append(values, condition.FieldValue...)
 	}
 	return conditions.String(), values
+}
+
+func (d *MysqlDriver) orderConcat(info []*OrderInfo) string {
+	var orders []string
+	for _, order := range info {
+		asc := "ASC"
+		if order.Desc {
+			asc = "DESC"
+		}
+		orders = append(orders, fmt.Sprintf("%s %s", order.FiledName, asc))
+	}
+	return strings.Join(orders, ",")
 }
 
 func (d *MysqlDriver) rowsProcess(result sql.Result, err error) (int64, error) {
@@ -110,7 +133,7 @@ func (d *MysqlDriver) rowsProcess(result sql.Result, err error) (int64, error) {
 }
 
 func (d *MysqlDriver) Create(table string, fields map[string]interface{}) (affected int64, err error) {
-	field, placeholder, values := d.fieldsConcat(fields)
+	field, placeholder, values := d.insertFieldsConcat(fields)
 	rowSql := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", table, field, placeholder)
 	log.Printf("sql is %s", rowSql)
 	return d.rowsProcess(d.db.Exec(rowSql, values...))
@@ -118,17 +141,56 @@ func (d *MysqlDriver) Create(table string, fields map[string]interface{}) (affec
 
 func (d *MysqlDriver) Delete(table string, conditions []*ConditionInfo) (affected int64, err error) {
 	condition, values := d.conditionConcat(conditions)
-	rowSql := fmt.Sprintf("DELETE FROM %s WHERE %s", table, condition)
+	rowSql := "DELETE FROM " + table
+	if len(conditions) > 0 {
+		rowSql += " WHERE " + condition
+	}
 	log.Printf("sql is %s", rowSql)
 	return d.rowsProcess(d.db.Exec(rowSql, values...))
 }
 
 func (d *MysqlDriver) Update(table string, fields map[string]interface{}, conditions []*ConditionInfo) (affected int64, err error) {
-	//TODO implement me
-	panic("implement me")
+	field, values := d.updateFieldConcat(fields)
+	rowSql := fmt.Sprintf("UPDATE %s SET %s", table, field)
+	if len(conditions) > 0 {
+		condition, values2 := d.conditionConcat(conditions)
+		rowSql += " WHERE " + condition
+		values = append(values, values2...)
+	}
+	log.Printf("sql is %s", rowSql)
+	return d.rowsProcess(d.db.Exec(rowSql, values...))
 }
 
 func (d *MysqlDriver) Find(table string, info FindInfo, res interface{}) error {
-	//TODO implement me
-	panic("implement me")
+	var values []interface{}
+	rowSql := strings.Builder{}
+	field := []string{"*"}
+	if len(info.Columns) > 0 {
+		field = []string{}
+		for _, column := range info.Columns {
+			field = append(field, fmt.Sprintf("`%s`", column))
+		}
+	}
+	rowSql.WriteString(fmt.Sprintf("SELECT %s FROM %s", strings.Join(field, ","), table))
+	if len(info.Conditions) > 0 {
+		condition, values2 := d.conditionConcat(info.Conditions)
+		rowSql.WriteString(" WHERE " + condition)
+		values = append(values, values2...)
+	}
+	if len(info.Order) > 0 {
+		condition := d.orderConcat(info.Order)
+		rowSql.WriteString(" ORDER BY " + condition)
+	}
+	if info.Limit != nil {
+		rowSql.WriteString(fmt.Sprintf(" LIMIT %d", *info.Limit))
+	}
+	if info.Offset != nil {
+		rowSql.WriteString(fmt.Sprintf(" OFFSET %d", *info.Offset))
+	}
+	log.Printf("sql is %s", rowSql.String())
+	rows, err := d.db.Query(rowSql.String(), values...)
+	if err != nil {
+		return err
+	}
+	return utils.ConvertRows2Struct(rows, res)
 }
