@@ -28,6 +28,7 @@ func NewMysqlDevice(ip string, port int, username, password, database string) (D
 
 type MysqlDriver struct {
 	db *sql.DB
+	tx *sql.Tx
 }
 
 func (d *MysqlDriver) insertFieldsConcat(fields map[string]interface{}) (string, string, []interface{}) {
@@ -137,6 +138,9 @@ func (d *MysqlDriver) Create(table string, fields map[string]interface{}) (affec
 	field, placeholder, values := d.insertFieldsConcat(fields)
 	rowSql := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", table, field, placeholder)
 	log.Printf("sql is %s", rowSql)
+	if d.tx != nil {
+		return d.rowsProcess(d.tx.Exec(rowSql, values...))
+	}
 	return d.rowsProcess(d.db.Exec(rowSql, values...))
 }
 
@@ -147,6 +151,9 @@ func (d *MysqlDriver) Delete(table string, conditions []*ConditionInfo) (affecte
 		rowSql += " WHERE " + condition
 	}
 	log.Printf("sql is %s", rowSql)
+	if d.tx != nil {
+		return d.rowsProcess(d.tx.Exec(rowSql, values...))
+	}
 	return d.rowsProcess(d.db.Exec(rowSql, values...))
 }
 
@@ -159,6 +166,9 @@ func (d *MysqlDriver) Update(table string, fields map[string]interface{}, condit
 		values = append(values, values2...)
 	}
 	log.Printf("sql is %s", rowSql)
+	if d.tx != nil {
+		return d.rowsProcess(d.tx.Exec(rowSql, values...))
+	}
 	return d.rowsProcess(d.db.Exec(rowSql, values...))
 }
 
@@ -196,14 +206,16 @@ func (d *MysqlDriver) Find(table string, info FindInfo, modelType reflect.Type) 
 	return utils.ConvertRows2Struct(rows, modelType)
 }
 
-func (d *MysqlDriver) Transaction(f func(tx DbInstance) error) error {
+func (d *MysqlDriver) Transaction(handle func(tx DbInstance) error) error {
 	tx, err := d.db.Begin()
 	if err != nil {
 		return err
 	}
-
-	if err = tx.Commit(); err != nil {
-		return err
+	instance := &MysqlDriver{tx: tx}
+	err = handle(instance)
+	if err != nil {
+		log.Printf("handle err %v, rollback", err)
+		return tx.Rollback()
 	}
-	return nil
+	return tx.Commit()
 }

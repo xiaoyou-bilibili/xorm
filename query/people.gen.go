@@ -4,7 +4,6 @@ import (
 	"github.com/xiaoyou-bilibili/xorm/driver"
 	"github.com/xiaoyou-bilibili/xorm/gen/do"
 	"github.com/xiaoyou-bilibili/xorm/gen/field"
-	"github.com/xiaoyou-bilibili/xorm/tmp/model"
 )
 
 func NewPeople(db driver.DbInstance) people {
@@ -55,11 +54,23 @@ func (p people) OrderBy(orders ...*driver.OrderInfo) people {
 	return p
 }
 
+func (p people) Create(models ...*People) error {
+	return p.do.Create(models)
+}
+
+func (p people) Delete() (int64, error) {
+	return p.do.Delete()
+}
+
+func (p people) Update(field field.IField, value interface{}) (int64, error) {
+	return p.do.Update(field, value)
+}
+
+func (p people) UpdateMulti(data map[field.IField]interface{}) (int64, error) {
+	return p.do.UpdateMulti(data)
+}
+
 func (p people) Find() ([]*People, error) {
 	res, err := p.do.Find()
 	return res.([]*People), err
-}
-
-func (p people) Create(models ...*model.Person) {
-
 }

@@ -1,9 +1,7 @@
 package driver
 
 import (
-	"fmt"
-	"github.com/xiaoyou-bilibili/xorm/utils"
-	"reflect"
+	"errors"
 	"testing"
 )
 
@@ -18,11 +16,15 @@ func TestAddStr(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	//fmt.Println(db.Create("people", map[string]interface{}{
-	//	"id":   5,
-	//	"name": "小游",
-	//	"age":  10,
-	//}))
+	db.Transaction(func(tx DbInstance) error {
+		tx.Create("people", map[string]interface{}{
+			"id":   5,
+			"name": "小游",
+			"age":  10,
+		})
+		//return nil
+		return errors.New("123")
+	})
 	//fmt.Println(db.Delete("people", []*ConditionInfo{
 	//	{Option: ConditionOptionNIn, FieldName: "name", FieldValue: []interface{}{1, 2}},
 	//}))
@@ -31,13 +33,13 @@ func TestAddStr(t *testing.T) {
 	//}, []*ConditionInfo{
 	//	{Option: ConditionOptionEq, FieldName: "id", FieldValue: []interface{}{1}},
 	//}))
-	limit := 1
-	res, err := db.Find("people", FindInfo{
-		Conditions: []*ConditionInfo{{Option: ConditionOptionIn, FieldValue: []interface{}{1, 2}, FieldName: "id"}},
-		Orders:     []*OrderInfo{{FieldName: "id", Desc: true}},
-		Limit:      &limit,
-	}, reflect.TypeOf(People{}))
-	fmt.Println("结果", res)
-	res2 := utils.Interface2String(res)
-	fmt.Println(res2)
+	//limit := int64(tx.Commit())
+	//res, err := db.Find("people", FindInfo{
+	//	Conditions: []*ConditionInfo{{Option: ConditionOptionIn, FieldValue: []interface{}{1, 2}, FieldName: "id"}},
+	//	Orders:     []*OrderInfo{{FieldName: "id", Desc: true}},
+	//	Limit:      &limit,
+	//}, reflect.TypeOf(People{}))
+	//fmt.Println("结果", res)
+	//res2 := utils.Interface2String(res)
+	//fmt.Println(res2)
 }

@@ -26,9 +26,10 @@ func TestGen(t *testing.T) {
 
 func TestSelect(t *testing.T) {
 	p := query.Use(InitDb())
-	p.Transaction(func(tx *query.Query) error {
-		return nil
-	})
+	//p.Transaction(func(tx *query.Query) error {
+	//	return nil
+	//})
+	p.Person.Update(p.Person.Age, "")
 	//res, err := p.Create()
 	//fmt.Println(utils.Interface2String(res), err)
 }

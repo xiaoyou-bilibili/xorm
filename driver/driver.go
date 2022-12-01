@@ -48,5 +48,5 @@ type DbInstance interface {
 	// Find 查找数据
 	Find(table string, info FindInfo, p reflect.Type) (interface{}, error)
 	// Transaction 事务操作
-	Transaction(func(tx DbInstance) error) error
+	Transaction(handle func(tx DbInstance) error) error
 }
