@@ -6,6 +6,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/xiaoyou-bilibili/xorm/utils"
 	"log"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -120,7 +121,7 @@ func (d *MysqlDriver) orderConcat(info []*OrderInfo) string {
 		if order.Desc {
 			asc = "DESC"
 		}
-		orders = append(orders, fmt.Sprintf("%s %s", order.FiledName, asc))
+		orders = append(orders, fmt.Sprintf("%s %s", order.FieldName, asc))
 	}
 	return strings.Join(orders, ",")
 }
@@ -161,7 +162,7 @@ func (d *MysqlDriver) Update(table string, fields map[string]interface{}, condit
 	return d.rowsProcess(d.db.Exec(rowSql, values...))
 }
 
-func (d *MysqlDriver) Find(table string, info FindInfo, res interface{}) error {
+func (d *MysqlDriver) Find(table string, info FindInfo, modelType reflect.Type) (interface{}, error) {
 	var values []interface{}
 	rowSql := strings.Builder{}
 	field := []string{"*"}
@@ -177,8 +178,8 @@ func (d *MysqlDriver) Find(table string, info FindInfo, res interface{}) error {
 		rowSql.WriteString(" WHERE " + condition)
 		values = append(values, values2...)
 	}
-	if len(info.Order) > 0 {
-		condition := d.orderConcat(info.Order)
+	if len(info.Orders) > 0 {
+		condition := d.orderConcat(info.Orders)
 		rowSql.WriteString(" ORDER BY " + condition)
 	}
 	if info.Limit != nil {
@@ -190,7 +191,19 @@ func (d *MysqlDriver) Find(table string, info FindInfo, res interface{}) error {
 	log.Printf("sql is %s", rowSql.String())
 	rows, err := d.db.Query(rowSql.String(), values...)
 	if err != nil {
+		return nil, err
+	}
+	return utils.ConvertRows2Struct(rows, modelType)
+}
+
+func (d *MysqlDriver) Transaction(f func(tx DbInstance) error) error {
+	tx, err := d.db.Begin()
+	if err != nil {
 		return err
 	}
-	return utils.ConvertRows2Struct(rows, res)
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+	return nil
 }

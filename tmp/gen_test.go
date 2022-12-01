@@ -1,9 +1,7 @@
 package tmp
 
 import (
-	"fmt"
 	"github.com/xiaoyou-bilibili/xorm/tmp/query"
-	"github.com/xiaoyou-bilibili/xorm/utils"
 	"testing"
 )
 
@@ -28,6 +26,9 @@ func TestGen(t *testing.T) {
 
 func TestSelect(t *testing.T) {
 	p := query.Use(InitDb())
-	res, err := p.Person.Find()
-	fmt.Println(utils.Interface2String(res), err)
+	p.Transaction(func(tx *query.Query) error {
+		return nil
+	})
+	//res, err := p.Create()
+	//fmt.Println(utils.Interface2String(res), err)
 }

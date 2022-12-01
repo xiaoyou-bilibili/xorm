@@ -12,8 +12,10 @@ func TestQuery(t *testing.T) {
 		panic(err)
 	}
 
-	query := NewQuery(db)
+	query := NewQuery(db).People
 
-	res, err := query.People.Find()
-	fmt.Println(res, err)
+	res, err := query.OrderBy(query.ID.Desc()).Find()
+	for _, people := range res {
+		fmt.Println("结果", people)
+	}
 }

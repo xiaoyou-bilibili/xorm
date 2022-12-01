@@ -2,24 +2,18 @@ package utils
 
 import (
 	"database/sql"
-	"errors"
 	"reflect"
 	"strings"
 )
 
 // ConvertRows2Struct sql row对象转换为结构体
-func ConvertRows2Struct(rows *sql.Rows, data interface{}) error {
-	va := reflect.ValueOf(data)
-	// 必须为指针类型
-	if va.Kind() != reflect.Ptr {
-		return errors.New("kind must be ptr")
-	}
+func ConvertRows2Struct(rows *sql.Rows, modelType reflect.Type) (interface{}, error) {
 	var scanRes []map[string]interface{}
 	// 先把所有的值给取出来
 	for rows.Next() {
 		columns, err := rows.ColumnTypes()
 		if err != nil {
-			return err
+			return nil, err
 		}
 		fields := make([]interface{}, 0, len(columns))
 		// 拿到所有字段，每个字段对于一个接口类型
@@ -33,13 +27,13 @@ func ConvertRows2Struct(rows *sql.Rows, data interface{}) error {
 		// 提取出字段的值
 		err = rows.Scan(fields...)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		scanRes = append(scanRes, row)
 	}
 	length := len(scanRes)
 	// 根据传入的elem类型，创建一个新的切片，大小为sql返回的结果
-	newSlice := reflect.MakeSlice(va.Elem().Type(), length, length)
+	newSlice := reflect.MakeSlice(reflect.SliceOf(modelType), length, length)
 	for index, values := range scanRes {
 		// 获取当前切片的值
 		item := newSlice.Index(index)
@@ -71,10 +65,8 @@ func ConvertRows2Struct(rows *sql.Rows, data interface{}) error {
 			}
 		}
 	}
-	// 把新的切片映射到旧切片上去
-	va.Elem().Set(newSlice)
 
-	return nil
+	return newSlice.Interface(), nil
 }
 
 // 下面需要把sql类型直接转换为自己固定的几个类型

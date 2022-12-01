@@ -5,7 +5,10 @@ import (
 )
 
 func NewQuery(db driver.DbInstance) *Query {
-	return &Query{db: db}
+	return &Query{
+		db:     db,
+		People: NewPeople(db),
+	}
 }
 
 type Query struct {

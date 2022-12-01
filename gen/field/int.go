@@ -4,6 +4,10 @@ import (
 	"github.com/xiaoyou-bilibili/xorm/driver"
 )
 
+func NewFieldInt64(field string) Int64 {
+	return Int64{Field{fieldName: field}}
+}
+
 type Int64 struct {
 	Field
 }
@@ -56,4 +60,12 @@ func (i64 Int64) Between(left int64, right int64) *driver.ConditionInfo {
 // NotBetween ...
 func (i64 Int64) NotBetween(left Field, right Field) *driver.ConditionInfo {
 	return i64.notBetween(left, right)
+}
+
+func (i64 Int64) Asc() *driver.OrderInfo {
+	return i64.asc()
+}
+
+func (i64 Int64) Desc() *driver.OrderInfo {
+	return i64.desc()
 }

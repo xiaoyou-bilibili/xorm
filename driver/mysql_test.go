@@ -3,6 +3,7 @@ package driver
 import (
 	"fmt"
 	"github.com/xiaoyou-bilibili/xorm/utils"
+	"reflect"
 	"testing"
 )
 
@@ -30,13 +31,12 @@ func TestAddStr(t *testing.T) {
 	//}, []*ConditionInfo{
 	//	{Option: ConditionOptionEq, FieldName: "id", FieldValue: []interface{}{1}},
 	//}))
-	var res []People
 	limit := 1
-	fmt.Println(db.Find("people", FindInfo{
+	res, err := db.Find("people", FindInfo{
 		Conditions: []*ConditionInfo{{Option: ConditionOptionIn, FieldValue: []interface{}{1, 2}, FieldName: "id"}},
-		Order:      []*OrderInfo{{FiledName: "id", Desc: true}},
+		Orders:     []*OrderInfo{{FieldName: "id", Desc: true}},
 		Limit:      &limit,
-	}, &res))
+	}, reflect.TypeOf(People{}))
 	fmt.Println("结果", res)
 	res2 := utils.Interface2String(res)
 	fmt.Println(res2)

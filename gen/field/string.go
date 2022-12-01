@@ -4,6 +4,10 @@ import (
 	"github.com/xiaoyou-bilibili/xorm/driver"
 )
 
+func NewFieldString(field string) String {
+	return String{Field{fieldName: field}}
+}
+
 type String struct {
 	Field
 }
@@ -46,4 +50,12 @@ func (str String) Like(value string) *driver.ConditionInfo {
 // NotLike ...
 func (str String) NotLike(value string) *driver.ConditionInfo {
 	return str.notLike(value)
+}
+
+func (str String) Asc() *driver.OrderInfo {
+	return str.asc()
+}
+
+func (str String) Desc() *driver.OrderInfo {
+	return str.desc()
 }

@@ -1,5 +1,7 @@
 package driver
 
+import "reflect"
+
 // ConditionOption 具体操作
 type ConditionOption int32
 
@@ -24,16 +26,16 @@ type ConditionInfo struct {
 }
 
 type OrderInfo struct {
-	FiledName string // 待排序的字段
+	FieldName string // 待排序的字段
 	Desc      bool   // 是否为降序排序
 }
 
 type FindInfo struct {
 	Columns    []string         // 待查找的列
 	Conditions []*ConditionInfo // 查询条件
-	Order      []*OrderInfo     // 排序条件
-	Limit      *int             // 返回限制
-	Offset     *int             // 偏移量
+	Orders     []*OrderInfo     // 排序条件
+	Limit      *int64           // 返回限制
+	Offset     *int64           // 偏移量
 }
 
 type DbInstance interface {
@@ -44,5 +46,7 @@ type DbInstance interface {
 	// Update 更新数据
 	Update(table string, fields map[string]interface{}, conditions []*ConditionInfo) (affected int64, err error)
 	// Find 查找数据
-	Find(table string, info FindInfo, res interface{}) error
+	Find(table string, info FindInfo, p reflect.Type) (interface{}, error)
+	// Transaction 事务操作
+	Transaction(func(tx DbInstance) error) error
 }
