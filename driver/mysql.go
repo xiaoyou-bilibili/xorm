@@ -31,6 +31,7 @@ type MysqlDriver struct {
 	tx *sql.Tx
 }
 
+// 转换insert字段
 func (d *MysqlDriver) insertFieldsConcat(fields map[string]interface{}) (string, string, []interface{}) {
 	field := make([]string, 0, len(fields))
 	value := make([]interface{}, 0, len(fields))
@@ -43,6 +44,7 @@ func (d *MysqlDriver) insertFieldsConcat(fields map[string]interface{}) (string,
 	return strings.Join(field, ","), strings.Join(placeholder, ","), value
 }
 
+// 转换更新条件
 func (d *MysqlDriver) updateFieldConcat(fields map[string]interface{}) (string, []interface{}) {
 	field := make([]string, 0, len(fields))
 	value := make([]interface{}, 0, len(fields))
@@ -53,6 +55,7 @@ func (d *MysqlDriver) updateFieldConcat(fields map[string]interface{}) (string, 
 	return strings.Join(field, ","), value
 }
 
+// 转换查询条件
 func (d *MysqlDriver) conditionConcat(info []*ConditionInfo) (string, []interface{}) {
 	conditions := strings.Builder{}
 	var values []interface{}
@@ -115,6 +118,7 @@ func (d *MysqlDriver) conditionConcat(info []*ConditionInfo) (string, []interfac
 	return conditions.String(), values
 }
 
+// 转换排序
 func (d *MysqlDriver) orderConcat(info []*OrderInfo) string {
 	var orders []string
 	for _, order := range info {
@@ -206,6 +210,7 @@ func (d *MysqlDriver) Find(table string, info FindInfo, modelType reflect.Type) 
 	return utils.ConvertRows2Struct(rows, modelType)
 }
 
+// Transaction 事务操作
 func (d *MysqlDriver) Transaction(handle func(tx DbInstance) error) error {
 	tx, err := d.db.Begin()
 	if err != nil {
