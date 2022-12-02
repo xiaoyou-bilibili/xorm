@@ -22,13 +22,15 @@ func NewMysqlDevice(ip string, port int, username, password, database string) (D
 	db.SetMaxIdleConns(10)
 
 	return &MysqlDriver{
-		db: db,
+		db:       db,
+		database: database,
 	}, nil
 }
 
 type MysqlDriver struct {
-	db *sql.DB
-	tx *sql.Tx
+	db       *sql.DB
+	tx       *sql.Tx
+	database string
 }
 
 // 转换insert字段
@@ -138,6 +140,14 @@ func (d *MysqlDriver) rowsProcess(result sql.Result, err error) (int64, error) {
 	return result.RowsAffected()
 }
 
+func (d *MysqlDriver) DataBaseName() string {
+	return d.database
+}
+
+func (d *MysqlDriver) SqlType() string {
+	return "mysql"
+}
+
 func (d *MysqlDriver) Create(table string, fields map[string]interface{}) (affected int64, err error) {
 	field, placeholder, values := d.insertFieldsConcat(fields)
 	rowSql := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", table, field, placeholder)
@@ -223,4 +233,12 @@ func (d *MysqlDriver) Transaction(handle func(tx DbInstance) error) error {
 		return tx.Rollback()
 	}
 	return tx.Commit()
+}
+
+func (d *MysqlDriver) RowQuery(sql string, args ...interface{}) (*sql.Rows, error) {
+	return d.db.Query(sql, args...)
+}
+
+func (d *MysqlDriver) RowExec(sql string, args ...interface{}) (int64, error) {
+	return d.rowsProcess(d.db.Exec(sql, args...))
 }

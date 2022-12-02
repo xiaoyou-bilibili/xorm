@@ -1,6 +1,9 @@
 package driver
 
-import "reflect"
+import (
+	"database/sql"
+	"reflect"
+)
 
 // ConditionOption 具体操作
 type ConditionOption int32
@@ -39,6 +42,10 @@ type FindInfo struct {
 }
 
 type DbInstance interface {
+	// DataBaseName 获取数据库名称
+	DataBaseName() string
+	// SqlType 当前数据库类型
+	SqlType() string
 	// Create 新增数据
 	Create(table string, fields map[string]interface{}) (affected int64, err error)
 	// Delete 删除数据
@@ -49,4 +56,8 @@ type DbInstance interface {
 	Find(table string, info FindInfo, p reflect.Type) (interface{}, error)
 	// Transaction 事务操作
 	Transaction(handle func(tx DbInstance) error) error
+	// RowQuery 原始查询操作
+	RowQuery(sql string, args ...interface{}) (*sql.Rows, error)
+	// RowExec 原始执行操作
+	RowExec(sql string, args ...interface{}) (int64, error)
 }

@@ -17,8 +17,8 @@ func New{{.Model}}(db driver.DbInstance) {{.Table}} {
 	_{{.Table}}.do.SetTable(model.TableName())
 	// 设置字段信息
 	{{$table := .Table}}
-	{{- range $k, $v := .Field}}
-	_{{$table}}.{{$k}} = field.NewField{{$v.FieldType}}("{{$v.FieldName}}")
+	{{- range $i, $v := .Fields}}
+	_{{$table}}.{{$v.Key}} = field.NewField{{$v.FieldType}}("{{$v.FieldName}}")
 	{{- end}}
 
 	return _{{.Table}}
@@ -26,8 +26,8 @@ func New{{.Model}}(db driver.DbInstance) {{.Table}} {
 
 type {{.Table}} struct {
 	do   do.Do
-	{{- range $k, $v := .Field}}
-	{{$k}} field.{{$v.FieldType}}
+	{{- range $i, $v := .Fields}}
+	{{$v.Key}} field.{{$v.FieldType}}
 	{{- end}}
 }
 

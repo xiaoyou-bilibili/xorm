@@ -3,28 +3,39 @@ package gen
 import (
 	"bytes"
 	"github.com/xiaoyou-bilibili/xorm/template"
+	"github.com/xiaoyou-bilibili/xorm/utils"
 )
 
 type Param struct {
-	Table string
-	Model string
-	Field map[string]FieldInfo
+	Table  string
+	Model  string
+	Fields []FieldInfo
 }
 
 type FieldInfo struct {
+	Key       string
 	FieldName string
 	FieldType string
 }
 
-func queryGen(buf *bytes.Buffer, table string, field map[string]string) error {
+func queryGen(buf *bytes.Buffer, table string, info []*TableField, path string) error {
 	param := Param{
-		Table: "people",
-		Model: "People",
-		Field: map[string]FieldInfo{
-			"Id":   {FieldName: "id", FieldType: "Int64"},
-			"Name": {FieldName: "name", FieldType: "String"},
-			"Age":  {FieldName: "age", FieldType: "Int64"},
-		},
+		Table: table,
+		Model: utils.FirstUpper(table),
 	}
-	return template.Render(template.QueryTemplate, buf, param)
+	fields := make([]FieldInfo, 0, len(info))
+	for _, field := range info {
+		fields = append(fields, FieldInfo{
+			Key:       utils.FirstUpper(field.FieldName),
+			FieldName: field.FieldName,
+			FieldType: utils.FirstUpper(field.FieldType),
+		})
+	}
+	param.Fields = fields
+
+	if err := template.Render(template.QueryTemplate, buf, param); err != nil {
+		return err
+	}
+
+	return writeFile(path, table+".query", buf)
 }

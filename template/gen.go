@@ -9,7 +9,7 @@ func NewQuery(db driver.DbInstance) *Query {
 	return &Query{
 		db:     db,
 		{{- range $k, $v := .Tables}}
-		{{$k}}: New{{$v}}(db),
+		{{$v}}: New{{$v}}(db),
 		{{- end}}
 	}
 }
@@ -18,7 +18,7 @@ type Query struct {
 	db driver.DbInstance
 
 	{{- range $k, $v := .Tables}}
-	{{$k}} {{$v}}
+	{{$v}} {{$k}}
 	{{- end}}
 }
 `
