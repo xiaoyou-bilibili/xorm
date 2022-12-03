@@ -53,7 +53,7 @@ func argParse() *cmdConf {
 	return &cmd
 }
 
-//go:generate go run main.go -ip 192.168.1.10 -port 8006 -user root -passwd xiaoyou -db demo -table people -path ./tmp -pkg tmp
+//go:generate go run xorm.go -ip 192.168.1.10 -port 8006 -user root -passwd xiaoyou -db demo -table people -path ./tmp -pkg tmp
 func main() {
 	cmd := argParse()
 	// 直接调用函数来生成

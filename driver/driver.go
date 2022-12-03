@@ -6,20 +6,22 @@ import (
 )
 
 // ConditionOption 具体操作
-type ConditionOption int32
+type ConditionOption uint
 
-const ConditionOptionLike = ConditionOption(0)      //  like
-const ConditionOptionNLike = ConditionOption(1)     //  not like
-const ConditionOptionEq = ConditionOption(2)        // =
-const ConditionOptionNeq = ConditionOption(3)       // !=
-const ConditionOptionGt = ConditionOption(4)        // >
-const ConditionOptionGte = ConditionOption(5)       // >=
-const ConditionOptionLt = ConditionOption(6)        // <
-const ConditionOptionLte = ConditionOption(7)       // <=
-const ConditionOptionIn = ConditionOption(8)        // in
-const ConditionOptionNIn = ConditionOption(9)       // not in
-const ConditionOptionBetween = ConditionOption(10)  // between
-const ConditionOptionNBetween = ConditionOption(11) // not between
+const (
+	ConditionOptionLike     ConditionOption = iota //  like
+	ConditionOptionNLike                           //  not like
+	ConditionOptionEq                              // =
+	ConditionOptionNeq                             // !=
+	ConditionOptionGt                              // >
+	ConditionOptionGte                             // >=
+	ConditionOptionLt                              // <
+	ConditionOptionLte                             // <=
+	ConditionOptionIn                              // in
+	ConditionOptionNIn                             // not in
+	ConditionOptionBetween                         // between
+	ConditionOptionNBetween                        // not between
+)
 
 type ConditionInfo struct {
 	Or         bool            // 是否为或，默认为and

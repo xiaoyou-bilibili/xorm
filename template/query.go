@@ -7,7 +7,7 @@ import (
 	"github.com/xiaoyou-bilibili/xorm/gen/field"
 )
 
-func New{{.Model}}(db driver.DbInstance) {{.Table}} {
+func new{{.Model}}(db driver.DbInstance) {{.Table}} {
 	model := &{{.Model}}{}
 	_{{.Table}} := {{.Table}}{}
 	_{{.Table}}.do = do.Do{}

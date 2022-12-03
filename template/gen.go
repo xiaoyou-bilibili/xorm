@@ -5,16 +5,16 @@ import (
 	"github.com/xiaoyou-bilibili/xorm/driver"
 )
 
-func NewQuery(db driver.DbInstance) *Query {
+func NewQuery(db driver.DbInstance) *query {
 	return &Query{
 		db:     db,
 		{{- range $k, $v := .Tables}}
-		{{$v}}: New{{$v}}(db),
+		{{$v}}: new{{$v}}(db),
 		{{- end}}
 	}
 }
 
-type Query struct {
+type query struct {
 	db driver.DbInstance
 
 	{{- range $k, $v := .Tables}}
