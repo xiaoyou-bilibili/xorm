@@ -6,7 +6,7 @@ import (
 )
 
 func NewQuery(db driver.DbInstance) *query {
-	return &Query{
+	return &query{
 		db:     db,
 		{{- range $k, $v := .Tables}}
 		{{$v}}: new{{$v}}(db),
