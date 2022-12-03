@@ -16,7 +16,7 @@
 ### 项目集成
 先安装一下依赖
 ```shell
-go get github.com/xiaoyou-bilibili/xorm@v1.0
+go get github.com/xiaoyou-bilibili/xorm@latest
 ```
 生成代码如下，注意参数替换
 ```go
@@ -42,8 +42,8 @@ func main() {
 ### 命令行生成
 使用下面的命令安装一下工具
 ```shell
-go get github.com/xiaoyou-bilibili/xorm@v1.0
-go install github.com/xiaoyou-bilibili/xorm/tools/xorm@v1.0
+go get github.com/xiaoyou-bilibili/xorm@latest
+go install github.com/xiaoyou-bilibili/xorm/tools/xorm@latest
 ```
 > 注意：这里需要把 GOPATH/bin 目录放到环境变量里去，要不然会找不到命令
 
