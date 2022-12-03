@@ -2,6 +2,7 @@ package field
 
 import (
 	"github.com/xiaoyou-bilibili/xorm/driver"
+	"reflect"
 )
 
 type IField interface {
@@ -18,6 +19,15 @@ func (f Field) FiledName() string {
 
 type Tool struct {
 	fieldName string
+}
+
+func (tool Tool) interface2List(data interface{}) []interface{} {
+	var res []interface{}
+	vf := reflect.ValueOf(data)
+	for i := 0; i < vf.Len(); i++ {
+		res = append(res, vf.Index(i).Interface())
+	}
+	return res
 }
 
 func (tool Tool) Eq(value interface{}) *driver.ConditionInfo {
@@ -68,19 +78,19 @@ func (tool Tool) Lte(value interface{}) *driver.ConditionInfo {
 	}
 }
 
-func (tool Tool) In(values ...interface{}) *driver.ConditionInfo {
+func (tool Tool) In(values interface{}) *driver.ConditionInfo {
 	return &driver.ConditionInfo{
 		FieldName:  tool.fieldName,
 		Option:     driver.ConditionOptionIn,
-		FieldValue: values,
+		FieldValue: tool.interface2List(values),
 	}
 }
 
-func (tool Tool) NotIn(values ...interface{}) *driver.ConditionInfo {
+func (tool Tool) NotIn(values interface{}) *driver.ConditionInfo {
 	return &driver.ConditionInfo{
 		FieldName:  tool.fieldName,
 		Option:     driver.ConditionOptionNIn,
-		FieldValue: values,
+		FieldValue: tool.interface2List(values),
 	}
 }
 
