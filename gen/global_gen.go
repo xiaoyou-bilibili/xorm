@@ -21,5 +21,5 @@ func globalGen(buf *bytes.Buffer, tables []string, path string) error {
 		return err
 	}
 
-	return writeFile(path, "gen", buf)
+	return utils.WriteGoFile(path, "gen", buf)
 }

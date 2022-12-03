@@ -9,10 +9,12 @@ func NewQuery(db driver.DbInstance) *Query {
 	return &Query{
 		db:     db,
 		People: NewPeople(db),
+		Test:   NewTest(db),
 	}
 }
 
 type Query struct {
 	db     driver.DbInstance
 	People people
+	Test   test
 }

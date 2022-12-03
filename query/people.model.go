@@ -2,9 +2,9 @@
 package query
 
 type People struct {
-	Id   int64  `xorm:"id" json:"id"`
-	Name string `xorm:"name" json:"name"`
-	Age  int64  `xorm:"age" json:"age"`
+	Id   int64   `xorm:"id" json:"id"`
+	Name *string `xorm:"name" json:"name"`
+	Age  *int64  `xorm:"age" json:"age"`
 }
 
 func (p *People) TableName() string {

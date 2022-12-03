@@ -16,6 +16,7 @@ type FieldInfo struct {
 	Key       string
 	FieldName string
 	FieldType string
+	IsNull    bool
 }
 
 func queryGen(buf *bytes.Buffer, table string, info []*TableField, path string) error {
@@ -29,6 +30,7 @@ func queryGen(buf *bytes.Buffer, table string, info []*TableField, path string) 
 			Key:       utils.FirstUpper(field.FieldName),
 			FieldName: field.FieldName,
 			FieldType: utils.FirstUpper(field.FieldType),
+			IsNull:    field.IsNull == "YES",
 		})
 	}
 	param.Fields = fields
@@ -37,5 +39,5 @@ func queryGen(buf *bytes.Buffer, table string, info []*TableField, path string) 
 		return err
 	}
 
-	return writeFile(path, table+".query", buf)
+	return utils.WriteGoFile(path, table+".query", buf)
 }

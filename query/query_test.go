@@ -3,7 +3,9 @@ package query
 import (
 	"fmt"
 	"github.com/xiaoyou-bilibili/xorm/driver"
+	"github.com/xiaoyou-bilibili/xorm/utils"
 	"testing"
+	"time"
 )
 
 func initMysql() driver.DbInstance {
@@ -15,9 +17,24 @@ func initMysql() driver.DbInstance {
 }
 
 func TestPeople_Create(t *testing.T) {
-	query := NewQuery(initMysql()).People
-	model := &People{Id: 3, Name: "小美", Age: 14}
+	query := NewQuery(initMysql()).Test
+	//model := &People{Id: 3, Name: "小美", Age: 14}
+	//fmt.Println(query.Create(model))
+	a := "{\"age\":32}"
+	model := &Test{
+		Id:  2,
+		Vc:  "测试2",
+		Ty:  21,
+		Bg:  6478576465,
+		Ubg: 232363,
+		Bi:  false,
+		Tp:  time.Now(),
+		Tx:  "ssss",
+		Ft:  44.44,
+		Js:  &a,
+	}
 	fmt.Println(query.Create(model))
+
 }
 
 func TestPeople_Delete(t *testing.T) {
@@ -33,10 +50,10 @@ func TestPeople_Update(t *testing.T) {
 }
 
 func TestPeople_Find(t *testing.T) {
-	query := NewQuery(initMysql()).People
-	rows, err := query.OrderBy(query.Id.Desc()).Find()
+	query := NewQuery(initMysql()).Test
+	rows, err := query.OrderBy(query.Id.Desc()).Limit(1).Find()
 	fmt.Println(err)
 	for _, row := range rows {
-		fmt.Println(row)
+		fmt.Println(utils.Interface2String(row))
 	}
 }

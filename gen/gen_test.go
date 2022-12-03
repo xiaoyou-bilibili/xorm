@@ -17,12 +17,12 @@ func initMysql() driver.DbInstance {
 
 func TestGetTable(t *testing.T) {
 	db := initMysql()
-	res, err := getTableFields(db, "people")
+	res, err := getTableFields(db, "test")
 	fmt.Println(utils.Interface2String(res), err)
 }
 
 func TestGenerateCode(t *testing.T) {
 	db := initMysql()
-	err := GenerateCode(db, []string{"people"}, GenerateConfig{Path: "../query", Pkg: "query"})
+	err := GenerateCode(db, []string{"people", "test"}, GenerateConfig{Path: "../query", Pkg: "query"})
 	fmt.Println(err)
 }

@@ -18,16 +18,22 @@ func modelGen(buf *bytes.Buffer, table string, info []*TableField, path string) 
 	}
 	fields := make([]FieldInfo, 0, len(info))
 	for _, field := range info {
-		fields = append(fields, FieldInfo{
+		info := FieldInfo{
 			Key:       utils.FirstUpper(field.FieldName),
 			FieldName: fmt.Sprintf("`xorm:\"%s\" json:\"%s\"`", field.FieldName, field.FieldName),
 			FieldType: field.FieldType,
-		})
+			IsNull:    field.IsNull == "YES",
+		}
+		if field.FieldType == "timestamp" {
+			info.FieldType = "time.Time"
+			buf.WriteString("\nimport \"time\" \n")
+		}
+		fields = append(fields, info)
 	}
 	param.Fields = fields
 	if err := template.Render(template.ModelTemplate, buf, param); err != nil {
 		return err
 	}
 
-	return writeFile(path, table+".model", buf)
+	return utils.WriteGoFile(path, table+".model", buf)
 }

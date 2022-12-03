@@ -60,7 +60,7 @@ func (i64 Int64) Between(left int64, right int64) *driver.ConditionInfo {
 }
 
 // NotBetween ...
-func (i64 Int64) NotBetween(left Field, right Field) *driver.ConditionInfo {
+func (i64 Int64) NotBetween(left int64, right int64) *driver.ConditionInfo {
 	return i64.tool.NotBetween(left, right)
 }
 
